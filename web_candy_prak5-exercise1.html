@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Web_candy_prak5_exercise1</title>
+
+    <style>
+        /* CSS untuk desain tabel */
+        .table {
+            border-radius: auto; 
+            background-color: rgb(153, 204, 255); 
+            color: rgb(0, 5, 6); /* Warna teks */
+        }
+
+        /* Gaya untuk judul kolom */
+        .table th {
+            font-weight: bold;
+            box-sizing: border-box;
+            font-family: 'Roboto Mono', sans-serif;
+            border: 1px solid rgb(0, 5, 6); /* Menambahkan border pada header kolom */
+            padding: 8px; /* Padding untuk header kolom */
+            background: rgb(0,212,255);
+            background: linear-gradient(90deg, rgba(0,212,255,1) 0%, rgba(0,212,255,1) 0%, rgba(0,212,255,1) 100%);
+        }
+
+        /* Gaya untuk sel data */
+        .table td {
+            border: 1px solid rgb(0, 5, 6);
+            padding: 8px; /* Padding untuk sel data */
+        }
+
+        /* Gaya untuk tombol */
+        .table .btn {
+            color: white;
+        }
+
+        /* CSS untuk form input data buku */
+        .form-wrap {
+            background-color: #ccc; /* Warna latar belakang abu */
+            border-radius: 10px; /* Melengkungkan sudut border */
+            padding: 20px;
+            margin-bottom: 20px; /* Jarak bawah antara form dan tabel */
+        }
+
+        /* CSS untuk label */
+        .form-wrap label {
+            margin-bottom: 5px; /* Jarak antara label dan input */
+            display: block; /* Setiap label dijadikan satu baris */
+        }
+
+        /* CSS untuk tombol submit */
+        .form-wrap button[type="submit"] {
+            font-family: 'Roboto Mono', sans-serif;
+            background-color: red; /* Warna tombol merah */
+            border: 5px;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* CSS untuk input */
+        .form-group input {
+            font-family: 'Roboto Mono', sans-serif;
+            width: 100%;
+            height: 40px;
+            font-size: 16px;
+            padding: 5px 10px; /* Ruang di sekitar teks dalam input */
+            border: 1px solid #000000;
+            border-radius: 5px;
+            margin-bottom: 10px; /* Jarak bawah antara input */
+        }
+
+        /* CSS untuk input file */
+        .form-group input[type="file"] {
+            border: none; 
+        }
+
+        /* CSS untuk pesan kesalahan */
+        .error-message {
+            color: red;
+            font-size: 12px;
+        }
+    </style>
+
+    <!-- use jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <form action="#" id="ic-form" class="form-wrap">
+        <h3>Form Input Data Buku</h3>
+        <div class="form-group">
+            <label for="bookName">Nama Buku</label>
+            <input type="text" name="bookName" id="bookName" required />
+            <span class="error-message" id="bookNameError"></span>
+        </div>
+        <div class="form-group">
+            <label for="author">Penulis Buku</label>
+            <input type="text" name="author" id="author" required />
+            <span class="error-message" id="authorError"></span>
+        </div>
+        <div class="form-group">
+            <label for="yearPublished">Tahun Terbit</label>
+            <input type="text" name="yearPublished" id="yearPublished" required />
+            <span class="error-message" id="yearPublishedError"></span>
+        </div>
+        <div class="form-group">
+            <input type="file" id="bookImage" accept="image/*" onchange="previewImage(event)" /><br /><br />
+            <img id="preview" src="#" alt="Foto Buku" style="display: none; max-width: 100px; max-height: 100px;" />
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Form pencarian -->
+    <div class="container mb-3">
+        <input type="text" id="searchInput" placeholder="Cari berdasarkan nama buku" class="form-control">
+        <button onclick="searchBook()" class="btn btn-primary mt-2">Cari Buku</button>
+        <button onclick="window.location.reload();" class="btn btn-secondary mt-2">Kembali</button>
+    </div>
+
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Foto Buku</th>
+                    <th scope="col">Nama Buku</th>
+                    <th scope="col">Penulis Buku</th>
+                    <th scope="col">Tahun Terbit</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="bookList">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js"></script>
+    <script>
+        // jQuery untuk validasi form
+        $(document).ready(function() {
+            $('#ic-form').submit(function(e) {
+                e.preventDefault(); // Mencegah form submit
+
+                // Validasi form
+                var bookName = $('#bookName').val();
+                var author = $('#author').val();
+                var yearPublished = $('#yearPublished').val();
+
+                if (!bookName || !author || !yearPublished) {
+                    // Berikan feedback visual
+                    $('#bookNameError').text(bookName ? '' : 'Nama Buku harus diisi');
+                    $('#authorError').text(author ? '' : 'Penulis Buku harus diisi');
+                    $('#yearPublishedError').text(yearPublished ? '' : 'Tahun Terbit harus diisi');
+                } else {
+                    // Jika form valid, tambahkan record
+                    addRecords();
+                }
+            });
+        });
+
+        // Array to store book records
+        let books = [];
+
+        // Function to add book records
+        function addRecords() {
+            var bookName = document.getElementById("bookName").value;
+            var author = document.getElementById("author").value;
+            var yearPublished = document.getElementById("yearPublished").value;
+            var bookImage = document.getElementById("preview").src;
+
+            books.push({ bookName, author, yearPublished, bookImage });
+
+            renderBooks();
+            clearForm();
+            updateLocalStorage();
+        }
+
+        // Function to render book records
+        function renderBooks() {
+            const bookList = document.getElementById("bookList");
+            bookList.innerHTML = "";
+
+            books.forEach((book, index) => {
+                const newRow = bookList.insertRow();
+                newRow.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${book.bookImage ? `<img src="${book.bookImage}" style="max-width: 100px; max-height: 100px;" alt="Foto Buku">` : "-"}</td>
+                    <td>${book.bookName}</td>
+                    <td>${book.author}</td>
+                    <td>${book.yearPublished}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editRecord(${index})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteRecord(${index})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        // Function to delete a book record
+        function deleteRecord(index) {
+            books.splice(index, 1);
+            renderBooks();
+            updateLocalStorage();
+        }
+
+        // Function to edit a book record
+        function editRecord(index) {
+            const book = books[index];
+            document.getElementById("bookName").value = book.bookName;
+            document.getElementById("author").value = book.author;
+            document.getElementById("yearPublished").value = book.yearPublished;
+            document.getElementById("preview").src = book.bookImage;
+        }
+
+        // Function to clear the form
+        function clearForm() {
+            document.getElementById("ic-form").reset();
+            document.getElementById("preview").style.display = "none";
+        }
+
+        // Function to update localStorage after any modification
+        function updateLocalStorage() {
+            localStorage.setItem("books", JSON.stringify(books));
+        }
+
+        // Function to load records from localStorage
+        window.onload = function() {
+            books = JSON.parse(localStorage.getItem("books")) || [];
+            renderBooks();
+        };
+        
+        // Function to preview image
+        function previewImage(event) {
+            var input = event.target;
+            var reader = new FileReader();
+            reader.onload = function() {
+                var imgElement = document.getElementById('preview');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        // Function to search for a book
+        function searchBook() {
+            var searchText = document.getElementById("searchInput").value.toLowerCase();
+            var filteredBooks = books.filter(book => book.bookName.toLowerCase().includes(searchText));
+            renderFilteredBooks(filteredBooks);
+        }
+
+        // Function to render filtered books
+        function renderFilteredBooks(filteredBooks) {
+            const bookList = document.getElementById("bookList");
+            bookList.innerHTML = "";
+
+            filteredBooks.forEach((book, index) => {
+                const newRow = bookList.insertRow();
+                newRow.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${book.bookImage ? `<img src="${book.bookImage}" style="max-width: 100px; max-height: 100px;" alt="Foto Buku">` : "-"}</td>
+                    <td>${book.bookName}</td>
+                    <td>${book.author}</td>
+                    <td>${book.yearPublished}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editRecord(${index})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteRecord(${index})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
